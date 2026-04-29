@@ -1,0 +1,63 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  flyway:
+    enabled: false
+
+app:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      command-group-id: test-command
+      compensation-group-id: test-compensation
+      break-on-first-error: false
+      max-poll-records: 10
+      consumers-count: 1
+    topics:
+      saga-command-debit-credit-note-pdf: saga.command.debit-credit-note-pdf
+      saga-compensation-debit-credit-note-pdf: saga.compensation.debit-credit-note-pdf
+      pdf-generated-debit-credit-note: pdf.generated.debit-credit-note
+      dlq: pdf.generation.debit-credit-note.dlq
+  minio:
+    endpoint: http://localhost:9000
+    access-key: minioadmin
+    secret-key: minioadmin
+    bucket-name: debitcreditnotes
+    region: us-east-1
+    base-url: http://localhost:9000/debitcreditnotes
+    path-style-access: true
+    cleanup:
+      enabled: false
+      cron: "0 0 2 * * ?"
+  pdf:
+    icc-profile-path: icc/sRGB.icc
+    generation:
+      max-retries: 3
+      max-concurrent-renders: 3
+      max-pdf-size-bytes: 52428800
+  debitcreditnote:
+    default-vat-rate: 7
+  rest-client:
+    connect-timeout: 5000
+    read-timeout: 10000
+    allowed-hosts: localhost
+  fonts:
+    health-check:
+      enabled: false
+      fail-on-error: false
+
+eureka:
+  client:
+    enabled: false
+
+management:
+  tracing:
+    enabled: false
