@@ -1,6 +1,7 @@
 package com.wpanther.debitcreditnote.pdf.application.service;
 
 import com.wpanther.saga.domain.enums.SagaStep;
+import com.wpanther.saga.domain.model.SagaCommand;
 import com.wpanther.debitcreditnote.pdf.application.port.out.PdfStoragePort;
 import com.wpanther.debitcreditnote.pdf.application.port.out.SagaReplyPort;
 import com.wpanther.debitcreditnote.pdf.application.port.out.SignedXmlFetchPort;
@@ -8,8 +9,6 @@ import com.wpanther.debitcreditnote.pdf.application.usecase.CompensateDebitCredi
 import com.wpanther.debitcreditnote.pdf.application.usecase.ProcessDebitCreditNotePdfUseCase;
 import com.wpanther.debitcreditnote.pdf.domain.model.DebitCreditNotePdfDocument;
 import com.wpanther.debitcreditnote.pdf.domain.service.DebitCreditNotePdfGenerationService;
-import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka.KafkaDebitCreditNoteCompensateCommand;
-import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka.KafkaDebitCreditNoteProcessCommand;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -53,7 +52,7 @@ public class SagaCommandHandler implements ProcessDebitCreditNotePdfUseCase, Com
     }
 
     @Override
-    public void handle(KafkaDebitCreditNoteProcessCommand command) {
+    public void handle(ProcessDebitCreditNotePdfUseCase.Command command) {
         MDC.put(MDC_SAGA_ID,         command.getSagaId());
         MDC.put(MDC_CORRELATION_ID,  command.getCorrelationId());
         MDC.put(MDC_DOCUMENT_NUMBER, command.getDocumentNumber());
@@ -153,7 +152,7 @@ public class SagaCommandHandler implements ProcessDebitCreditNotePdfUseCase, Com
     }
 
     @Override
-    public void handle(KafkaDebitCreditNoteCompensateCommand command) {
+    public void handle(CompensateDebitCreditNotePdfUseCase.Command command) {
         MDC.put(MDC_SAGA_ID,        command.getSagaId());
         MDC.put(MDC_CORRELATION_ID,  command.getCorrelationId());
         MDC.put(MDC_DOCUMENT_ID,     command.getDocumentId());
@@ -189,7 +188,7 @@ public class SagaCommandHandler implements ProcessDebitCreditNotePdfUseCase, Com
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void publishOrchestrationFailure(KafkaDebitCreditNoteProcessCommand command, Throwable cause) {
+    public void publishOrchestrationFailure(SagaCommand command, Throwable cause) {
         try {
             sagaReplyPort.publishFailure(command.getSagaId(), command.getSagaStep(),
                     command.getCorrelationId(),
@@ -200,7 +199,7 @@ public class SagaCommandHandler implements ProcessDebitCreditNotePdfUseCase, Com
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void publishCompensationOrchestrationFailure(KafkaDebitCreditNoteCompensateCommand command,
+    public void publishCompensationOrchestrationFailure(SagaCommand command,
                                                          Throwable cause) {
         try {
             sagaReplyPort.publishFailure(command.getSagaId(), command.getSagaStep(),

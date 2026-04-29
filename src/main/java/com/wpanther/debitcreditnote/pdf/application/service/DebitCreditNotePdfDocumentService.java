@@ -1,12 +1,12 @@
 package com.wpanther.debitcreditnote.pdf.application.service;
 
+import com.wpanther.debitcreditnote.pdf.application.event.DebitCreditNotePdfGeneratedEvent;
 import com.wpanther.debitcreditnote.pdf.application.port.out.PdfEventPort;
 import com.wpanther.debitcreditnote.pdf.application.port.out.SagaReplyPort;
+import com.wpanther.debitcreditnote.pdf.application.usecase.CompensateDebitCreditNotePdfUseCase;
+import com.wpanther.debitcreditnote.pdf.application.usecase.ProcessDebitCreditNotePdfUseCase;
 import com.wpanther.debitcreditnote.pdf.domain.model.DebitCreditNotePdfDocument;
 import com.wpanther.debitcreditnote.pdf.domain.repository.DebitCreditNotePdfDocumentRepository;
-import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka.KafkaDebitCreditNoteCompensateCommand;
-import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka.KafkaDebitCreditNoteProcessCommand;
-import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.out.messaging.DebitCreditNotePdfGeneratedEvent;
 import com.wpanther.debitcreditnote.pdf.infrastructure.metrics.PdfGenerationMetrics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +60,7 @@ public class DebitCreditNotePdfDocumentService {
     @Transactional
     public void completeGenerationAndPublish(UUID documentId, String s3Key, String fileUrl,
                                              long fileSize, int previousRetryCount,
-                                             KafkaDebitCreditNoteProcessCommand command) {
+                                             ProcessDebitCreditNotePdfUseCase.Command command) {
         DebitCreditNotePdfDocument doc = requireDocument(documentId);
         doc.markCompleted(s3Key, fileUrl, fileSize);
         doc.markXmlEmbedded();
@@ -79,7 +79,7 @@ public class DebitCreditNotePdfDocumentService {
     @Transactional
     public void failGenerationAndPublish(UUID documentId, String errorMessage,
                                          int previousRetryCount,
-                                         KafkaDebitCreditNoteProcessCommand command) {
+                                         ProcessDebitCreditNotePdfUseCase.Command command) {
         String safeError = errorMessage != null ? errorMessage : "PDF generation failed";
         DebitCreditNotePdfDocument doc = requireDocument(documentId);
         doc.markFailed(safeError);
@@ -99,7 +99,7 @@ public class DebitCreditNotePdfDocumentService {
 
     @Transactional
     public void publishIdempotentSuccess(DebitCreditNotePdfDocument existing,
-                                         KafkaDebitCreditNoteProcessCommand command) {
+                                         ProcessDebitCreditNotePdfUseCase.Command command) {
         pdfEventPort.publishPdfGenerated(buildGeneratedEvent(existing, command));
         sagaReplyPort.publishSuccess(
                 command.getSagaId(), command.getSagaStep(), command.getCorrelationId(),
@@ -109,7 +109,7 @@ public class DebitCreditNotePdfDocumentService {
     }
 
     @Transactional
-    public void publishRetryExhausted(KafkaDebitCreditNoteProcessCommand command) {
+    public void publishRetryExhausted(ProcessDebitCreditNotePdfUseCase.Command command) {
         pdfGenerationMetrics.recordRetryExhausted(
                 command.getSagaId(), command.getDocumentId(), command.getDocumentNumber());
         sagaReplyPort.publishFailure(
@@ -119,19 +119,19 @@ public class DebitCreditNotePdfDocumentService {
     }
 
     @Transactional
-    public void publishGenerationFailure(KafkaDebitCreditNoteProcessCommand command, String errorMessage) {
+    public void publishGenerationFailure(ProcessDebitCreditNotePdfUseCase.Command command, String errorMessage) {
         sagaReplyPort.publishFailure(
                 command.getSagaId(), command.getSagaStep(), command.getCorrelationId(), errorMessage);
     }
 
     @Transactional
-    public void publishCompensated(KafkaDebitCreditNoteCompensateCommand command) {
+    public void publishCompensated(CompensateDebitCreditNotePdfUseCase.Command command) {
         sagaReplyPort.publishCompensated(
                 command.getSagaId(), command.getSagaStep(), command.getCorrelationId());
     }
 
     @Transactional
-    public void publishCompensationFailure(KafkaDebitCreditNoteCompensateCommand command, String error) {
+    public void publishCompensationFailure(CompensateDebitCreditNotePdfUseCase.Command command, String error) {
         sagaReplyPort.publishFailure(
                 command.getSagaId(), command.getSagaStep(), command.getCorrelationId(), error);
     }
@@ -148,7 +148,7 @@ public class DebitCreditNotePdfDocumentService {
     }
 
     private DebitCreditNotePdfGeneratedEvent buildGeneratedEvent(DebitCreditNotePdfDocument doc,
-                                                                  KafkaDebitCreditNoteProcessCommand command) {
+                                                                  ProcessDebitCreditNotePdfUseCase.Command command) {
         return new DebitCreditNotePdfGeneratedEvent(
                 command.getSagaId(), command.getDocumentId(), doc.getDocumentNumber(),
                 doc.getDocumentUrl(), doc.getFileSize(), doc.isXmlEmbedded(), command.getCorrelationId());

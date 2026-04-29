@@ -57,8 +57,8 @@ public class MinioStorageAdapter implements PdfStoragePort {
 
     @Override
     @CircuitBreaker(name = "minio")
-    public String store(String taxInvoiceNumber, byte[] pdfBytes) {
-        return storeTimer.record(() -> doStore(taxInvoiceNumber, pdfBytes));
+    public String store(String documentNumber, byte[] pdfBytes) {
+        return storeTimer.record(() -> doStore(documentNumber, pdfBytes));
     }
 
     @Override
@@ -72,9 +72,9 @@ public class MinioStorageAdapter implements PdfStoragePort {
         return baseUrl + "/" + s3Key;
     }
 
-    private String doStore(String taxInvoiceNumber, byte[] pdfBytes) {
+    private String doStore(String documentNumber, byte[] pdfBytes) {
         LocalDate now = LocalDate.now();
-        String safeName = sanitizeFilename(taxInvoiceNumber);
+        String safeName = sanitizeFilename(documentNumber);
         String fileName = String.format("debitcreditnote-%s-%s.pdf", safeName, UUID.randomUUID());
         String s3Key = String.format("%04d/%02d/%02d/%s",
                 now.getYear(), now.getMonthValue(), now.getDayOfMonth(), fileName);

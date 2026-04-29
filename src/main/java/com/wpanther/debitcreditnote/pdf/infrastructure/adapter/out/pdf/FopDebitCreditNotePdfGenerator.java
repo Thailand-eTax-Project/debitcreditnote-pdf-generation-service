@@ -40,7 +40,11 @@ public class FopDebitCreditNotePdfGenerator {
 
     private static final List<String> REQUIRED_FONTS = List.of(
             "fonts/THSarabunNew.ttf",
-            "fonts/THSarabunNew-Bold.ttf"
+            "fonts/THSarabunNew-Bold.ttf",
+            "fonts/THSarabunNew-Italic.ttf",
+            "fonts/THSarabunNew-BoldItalic.ttf",
+            "fonts/NotoSansThaiLooped-Regular.ttf",
+            "fonts/NotoSansThaiLooped-Bold.ttf"
     );
 
     private final FopFactory fopFactory;

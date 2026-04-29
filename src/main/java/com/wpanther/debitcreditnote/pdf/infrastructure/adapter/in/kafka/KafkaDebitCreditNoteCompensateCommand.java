@@ -2,6 +2,7 @@ package com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wpanther.debitcreditnote.pdf.application.usecase.CompensateDebitCreditNotePdfUseCase;
 import com.wpanther.saga.domain.enums.SagaStep;
 import com.wpanther.saga.domain.model.SagaCommand;
 import lombok.Getter;
@@ -9,7 +10,8 @@ import lombok.Getter;
 import java.time.Instant;
 import java.util.UUID;
 
-public class KafkaDebitCreditNoteCompensateCommand extends SagaCommand {
+public class KafkaDebitCreditNoteCompensateCommand extends SagaCommand
+        implements CompensateDebitCreditNotePdfUseCase.Command {
 
     private static final long serialVersionUID = 1L;
 
@@ -40,5 +42,4 @@ public class KafkaDebitCreditNoteCompensateCommand extends SagaCommand {
     @Override public String getSagaId()        { return super.getSagaId(); }
     @Override public SagaStep getSagaStep()    { return super.getSagaStep(); }
     @Override public String getCorrelationId() { return super.getCorrelationId(); }
-    public String getDocumentId() { return documentId; }
 }
