@@ -1,0 +1,44 @@
+package com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wpanther.saga.domain.enums.SagaStep;
+import com.wpanther.saga.domain.model.SagaCommand;
+import lombok.Getter;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public class KafkaDebitCreditNoteCompensateCommand extends SagaCommand {
+
+    private static final long serialVersionUID = 1L;
+
+    @Getter
+    @JsonProperty("documentId") private final String documentId;
+
+    @JsonCreator
+    public KafkaDebitCreditNoteCompensateCommand(
+            @JsonProperty("eventId")       UUID eventId,
+            @JsonProperty("occurredAt")    Instant occurredAt,
+            @JsonProperty("eventType")     String eventType,
+            @JsonProperty("version")       int version,
+            @JsonProperty("sagaId")        String sagaId,
+            @JsonProperty("sagaStep")      SagaStep sagaStep,
+            @JsonProperty("correlationId") String correlationId,
+            @JsonProperty("documentId")    String documentId) {
+        super(eventId, occurredAt, eventType, version, sagaId, sagaStep, correlationId);
+        this.documentId = documentId;
+    }
+
+    /** Convenience constructor for testing. */
+    public KafkaDebitCreditNoteCompensateCommand(String sagaId, SagaStep sagaStep, String correlationId,
+                                                 String documentId) {
+        super(sagaId, sagaStep, correlationId);
+        this.documentId = documentId;
+    }
+
+    @Override public String getSagaId()        { return super.getSagaId(); }
+    @Override public SagaStep getSagaStep()    { return super.getSagaStep(); }
+    @Override public String getCorrelationId() { return super.getCorrelationId(); }
+    public String getDocumentId() { return documentId; }
+}
