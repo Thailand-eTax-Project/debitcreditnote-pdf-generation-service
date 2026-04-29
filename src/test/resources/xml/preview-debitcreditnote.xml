@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="../data/standard/DebitCreditNote_Schematron_2p1.sch" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<rsm:DebitCreditNote_CrossIndustryInvoice 
+    xmlns:ram="urn:etda:uncefact:data:standard:DebitCreditNote_ReusableAggregateBusinessInformationEntity:2"
+    xmlns:rsm="urn:etda:uncefact:data:standard:DebitCreditNote_CrossIndustryInvoice:2"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:etda:uncefact:data:standard:DebitCreditNote_CrossIndustryInvoice:2 file:../data/standard/DebitCreditNote_CrossIndustryInvoice_2p1.xsd">
+    <rsm:ExchangedDocumentContext>
+        <ram:GuidelineSpecifiedDocumentContextParameter>
+            <ram:ID schemeName="ETDA" schemeVersionID="v2.1">ER3-2560</ram:ID>
+        </ram:GuidelineSpecifiedDocumentContextParameter>
+    </rsm:ExchangedDocumentContext>
+    <rsm:ExchangedDocument>
+        <ram:ID>423-612</ram:ID>
+        <ram:Name>ใบลดหนี้</ram:Name>
+        <ram:TypeCode>81</ram:TypeCode>
+        <ram:IssueDateTime>2006-05-04T00:00:00.0</ram:IssueDateTime>
+        <ram:Purpose>ลดราคาค่าบริการ (บริการผิดข้อกาหนดที่ตกลงกัน)</ram:Purpose>
+        <ram:PurposeCode>CDNG01</ram:PurposeCode>
+        <ram:CreationDateTime>2006-05-04T00:00:00.0</ram:CreationDateTime>
+        <ram:IncludedNote>
+            <ram:Subject>oM8G2oV7</ram:Subject>
+            <ram:Content>A2BcyVpQ</ram:Content>
+        </ram:IncludedNote>
+    </rsm:ExchangedDocument>
+    <rsm:SupplyChainTradeTransaction>
+        <ram:ApplicableHeaderTradeAgreement>
+            <ram:SellerTradeParty>
+                <ram:ID>T0019</ram:ID>
+                <ram:GlobalID schemeID="GLN" schemeAgencyID="GS1">8850001999993</ram:GlobalID>
+                <ram:Name>ชื่อผู้ขาย</ram:Name>
+                <ram:SpecifiedTaxRegistration>
+                    <ram:ID schemeID="TXID" schemeAgencyID="RD">333333333333300000</ram:ID>
+                </ram:SpecifiedTaxRegistration>
+                <ram:DefinedTradeContact>
+                    <ram:EmailURIUniversalCommunication>
+                        <ram:URIID>mailto:seller@gmail.com</ram:URIID>
+                    </ram:EmailURIUniversalCommunication>  
+                </ram:DefinedTradeContact>
+                <ram:PostalTradeAddress>
+                    <ram:PostcodeCode>10240</ram:PostcodeCode>
+                    <ram:BuildingName>เดอะมอลล์บางกะปิ</ram:BuildingName>
+                    <ram:StreetName>ลาดพร้าว</ram:StreetName>
+                    <ram:CityName>1006</ram:CityName>
+                    <ram:CitySubDivisionName>100601</ram:CitySubDivisionName>
+                    <ram:CountryID>TH</ram:CountryID>
+                    <ram:CountrySubDivisionID>10</ram:CountrySubDivisionID>
+                    <ram:BuildingNumber>99</ram:BuildingNumber>
+                </ram:PostalTradeAddress>
+            </ram:SellerTradeParty>
+            <ram:BuyerTradeParty>
+                <ram:ID>S000015QgoXpxSf</ram:ID>
+                <ram:GlobalID schemeID="GLN" schemeAgencyID="GS1">8850001999993</ram:GlobalID>
+                <ram:Name>บริษัท แนวตั้ง จำกัด</ram:Name>
+                <ram:SpecifiedTaxRegistration>
+                    <ram:ID schemeID="TXID" schemeAgencyID="RD">123456789123456789</ram:ID>
+                </ram:SpecifiedTaxRegistration>
+                <ram:DefinedTradeContact>
+                    <ram:EmailURIUniversalCommunication>
+                        <ram:URIID>mailto:Wutt.Na@gmail.com</ram:URIID>
+                    </ram:EmailURIUniversalCommunication>
+                </ram:DefinedTradeContact>
+                <ram:PostalTradeAddress>
+                    <ram:PostcodeCode>10400</ram:PostcodeCode>
+                    <ram:BuildingName>อาคารเบญจจินดา</ram:BuildingName>
+                    <ram:StreetName>กำแพงเพชร 6</ram:StreetName>
+                    <ram:CityName>1030</ram:CityName>
+                    <ram:CitySubDivisionName>103001</ram:CitySubDivisionName>
+                    <ram:CountryID>TH</ram:CountryID>
+                    <ram:CountrySubDivisionID>10</ram:CountrySubDivisionID>
+                    <ram:BuildingNumber>40/20</ram:BuildingNumber>
+                </ram:PostalTradeAddress>
+            </ram:BuyerTradeParty>
+            <ram:ApplicableTradeDeliveryTerms>
+                <ram:DeliveryTypeCode>FCA</ram:DeliveryTypeCode>
+            </ram:ApplicableTradeDeliveryTerms>
+            <ram:BuyerOrderReferencedDocument>
+                <ram:IssuerAssignedID>123456789012345678901234567890</ram:IssuerAssignedID>
+                <ram:IssueDateTime>2017-01-29T00:00:00Z</ram:IssueDateTime>
+                <ram:ReferenceTypeCode>LAR</ram:ReferenceTypeCode>
+            </ram:BuyerOrderReferencedDocument>
+            <ram:AdditionalReferencedDocument>
+                <ram:IssuerAssignedID>123456789012345678901234567890</ram:IssuerAssignedID>
+                <ram:IssueDateTime>2017-01-29T10:05:51Z</ram:IssueDateTime>
+                <ram:ReferenceTypeCode>81</ram:ReferenceTypeCode>
+            </ram:AdditionalReferencedDocument>
+           
+        </ram:ApplicableHeaderTradeAgreement>
+        <ram:ApplicableHeaderTradeDelivery>
+            <ram:ShipToTradeParty>
+                <ram:ID>T0019</ram:ID>
+                <ram:GlobalID schemeID="GLN" schemeAgencyID="GS1">8850001999993</ram:GlobalID>
+                <ram:Name>บริษัท แนวตั้ง จำกัด</ram:Name>
+                <ram:DefinedTradeContact>
+                    <ram:PersonName>อติชาต ชัยแสง</ram:PersonName>
+                    <ram:DepartmentName>ฝ่ายขาย</ram:DepartmentName>
+                    <ram:TelephoneUniversalCommunication>
+                        <ram:CompleteNumber>+66-123-1234</ram:CompleteNumber>
+                    </ram:TelephoneUniversalCommunication>
+                </ram:DefinedTradeContact>
+                <ram:PostalTradeAddress>
+                    <ram:PostcodeCode>10400</ram:PostcodeCode>
+                    <ram:BuildingName>อาคารเบญจจินดา</ram:BuildingName>
+                    <ram:StreetName>กำแพงเพชร 6</ram:StreetName>
+                    <ram:CityName>1030</ram:CityName>
+                    <ram:CitySubDivisionName>103001</ram:CitySubDivisionName>
+                    <ram:CountryID>TH</ram:CountryID>
+                    <ram:CountrySubDivisionID>10</ram:CountrySubDivisionID>
+                    <ram:BuildingNumber>40/20</ram:BuildingNumber>
+                </ram:PostalTradeAddress>
+            </ram:ShipToTradeParty>
+            <ram:ShipFromTradeParty>
+                <ram:ID>T0019</ram:ID>
+                <ram:GlobalID schemeID="GLN" schemeAgencyID="GS1">8850001999993</ram:GlobalID>
+                <ram:Name>ชื่อผู้ขาย</ram:Name>
+            </ram:ShipFromTradeParty>
+            <ram:ActualDeliverySupplyChainEvent>
+                <ram:OccurrenceDateTime>2006-05-04T00:00:00.0
+                </ram:OccurrenceDateTime>
+            </ram:ActualDeliverySupplyChainEvent>
+        </ram:ApplicableHeaderTradeDelivery>
+        <ram:ApplicableHeaderTradeSettlement>
+            <ram:InvoiceCurrencyCode>THB</ram:InvoiceCurrencyCode>
+            <ram:ApplicableTradeTax>
+                <ram:TypeCode>VAT</ram:TypeCode>
+                <ram:CalculatedRate>7.00</ram:CalculatedRate>
+                <ram:BasisAmount>9000.00</ram:BasisAmount>
+                <ram:CalculatedAmount>630.00</ram:CalculatedAmount>
+            </ram:ApplicableTradeTax>
+            <ram:SpecifiedTradeAllowanceCharge>
+                <ram:ChargeIndicator>true</ram:ChargeIndicator>
+                <ram:ActualAmount>10</ram:ActualAmount>
+                <ram:ReasonCode>79</ram:ReasonCode>
+            </ram:SpecifiedTradeAllowanceCharge>
+            <ram:SpecifiedTradePaymentTerms>
+                <ram:Description>Cost plus</ram:Description>
+                <ram:DueDateDateTime>2006-05-04T00:00:00.0</ram:DueDateDateTime>
+                <ram:TypeCode>49</ram:TypeCode>                
+            </ram:SpecifiedTradePaymentTerms>
+            <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+                <ram:OriginalInformationAmount>10000.00</ram:OriginalInformationAmount>
+                <ram:LineTotalAmount>9000.00</ram:LineTotalAmount>
+                <ram:DifferenceInformationAmount>1000.00</ram:DifferenceInformationAmount>
+                <ram:AllowanceTotalAmount>0</ram:AllowanceTotalAmount>
+                <ram:TaxBasisTotalAmount>0.00</ram:TaxBasisTotalAmount>
+                <ram:TaxTotalAmount>70.00</ram:TaxTotalAmount>
+                <ram:GrandTotalAmount>9080.00</ram:GrandTotalAmount> 
+            </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+        </ram:ApplicableHeaderTradeSettlement>
+        <ram:IncludedSupplyChainTradeLineItem>
+            <ram:AssociatedDocumentLineDocument>
+                <ram:LineID>1</ram:LineID>
+            </ram:AssociatedDocumentLineDocument>
+            <ram:SpecifiedTradeProduct>
+                <ram:ID>AS100000</ram:ID>
+                <ram:GlobalID schemeID="GTIN" schemeAgencyID="GS1">12345678901234</ram:GlobalID>
+                <ram:Name>Computer Notebook Compag Presario1700</ram:Name>
+                <ram:IndividualTradeProductInstance>
+                    <ram:BatchID>g_1QE6ny</ram:BatchID>
+                    <ram:ExpiryDateTime>2016-02-24T10:05:51Z
+                    </ram:ExpiryDateTime>
+                </ram:IndividualTradeProductInstance>
+                <ram:DesignatedProductClassification>
+                    <ram:ClassName>test1</ram:ClassName>
+                    <ram:ClassName>test2</ram:ClassName>
+                </ram:DesignatedProductClassification>
+                <ram:OriginTradeCountry>
+                    <ram:ID>TH</ram:ID>
+                </ram:OriginTradeCountry>
+                <ram:InformationNote>
+                    <ram:Subject>Specification</ram:Subject>
+                    <ram:Content>CPU: Core2Duo 3GHz Ram: 8GB HD: 250 GB</ram:Content>
+                </ram:InformationNote>
+            </ram:SpecifiedTradeProduct>
+            <ram:SpecifiedLineTradeAgreement>
+                <ram:GrossPriceProductTradePrice>
+                    <ram:ChargeAmount>500</ram:ChargeAmount>
+                    <ram:AppliedTradeAllowanceCharge>
+                        <ram:ActualAmount>200</ram:ActualAmount>
+                    </ram:AppliedTradeAllowanceCharge>
+                </ram:GrossPriceProductTradePrice>
+            </ram:SpecifiedLineTradeAgreement>
+            <ram:SpecifiedLineTradeDelivery>
+                <ram:BilledQuantity unitCode="BX">2</ram:BilledQuantity>
+            </ram:SpecifiedLineTradeDelivery>
+            <ram:SpecifiedLineTradeSettlement>
+                <ram:ApplicableTradeTax>
+                    <ram:TypeCode>VAT</ram:TypeCode>
+                    <ram:CalculatedRate>7</ram:CalculatedRate>
+                    <ram:BasisAmount>1000.00</ram:BasisAmount>
+                    <ram:CalculatedAmount>70.00</ram:CalculatedAmount>
+                </ram:ApplicableTradeTax>
+                <ram:SpecifiedTradeAllowanceCharge>
+                    <ram:ChargeIndicator>true</ram:ChargeIndicator>
+                    <ram:ActualAmount>0.00</ram:ActualAmount>
+                    <ram:ReasonCode>61</ram:ReasonCode>
+                </ram:SpecifiedTradeAllowanceCharge>
+                <ram:SpecifiedTradeSettlementLineMonetarySummation>
+                    <ram:TaxTotalAmount>70</ram:TaxTotalAmount>
+                    <ram:NetLineTotalAmount>1000.00</ram:NetLineTotalAmount>
+                    <ram:NetIncludingTaxesLineTotalAmount>1070.00</ram:NetIncludingTaxesLineTotalAmount>
+                </ram:SpecifiedTradeSettlementLineMonetarySummation>
+            </ram:SpecifiedLineTradeSettlement>
+           
+        </ram:IncludedSupplyChainTradeLineItem>
+    </rsm:SupplyChainTradeTransaction>
+</rsm:DebitCreditNote_CrossIndustryInvoice>
