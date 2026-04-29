@@ -20,7 +20,7 @@ public class DebitCreditNotePdfDocument {
 
     // Debit/Credit Note Reference
     private final String debitCreditNoteId;
-    private final String debitCreditNoteNumber;
+    private final String documentNumber;
 
     // Document Location
     private String documentPath;
@@ -45,7 +45,7 @@ public class DebitCreditNotePdfDocument {
     private DebitCreditNotePdfDocument(Builder builder) {
         this.id = builder.id != null ? builder.id : UUID.randomUUID();
         this.debitCreditNoteId = Objects.requireNonNull(builder.debitCreditNoteId, "Debit/Credit Note ID is required");
-        this.debitCreditNoteNumber = Objects.requireNonNull(builder.debitCreditNoteNumber, "Debit/Credit Note number is required");
+        this.documentNumber = Objects.requireNonNull(builder.documentNumber, "Document number is required");
         this.documentPath = builder.documentPath;
         this.documentUrl = builder.documentUrl;
         this.fileSize = builder.fileSize;
@@ -64,8 +64,8 @@ public class DebitCreditNotePdfDocument {
         if (debitCreditNoteId.isBlank()) {
             throw new DebitCreditNotePdfGenerationException("Debit/Credit Note ID cannot be blank");
         }
-        if (debitCreditNoteNumber.isBlank()) {
-            throw new DebitCreditNotePdfGenerationException("Debit/Credit Note number cannot be blank");
+        if (documentNumber.isBlank()) {
+            throw new DebitCreditNotePdfGenerationException("Document number cannot be blank");
         }
     }
 
@@ -141,7 +141,7 @@ public class DebitCreditNotePdfDocument {
     // Getters
     public UUID getId() { return id; }
     public String getDebitCreditNoteId() { return debitCreditNoteId; }
-    public String getDebitCreditNoteNumber() { return debitCreditNoteNumber; }
+    public String getDocumentNumber() { return documentNumber; }
     public String getDocumentPath() { return documentPath; }
     public String getDocumentUrl() { return documentUrl; }
     public long getFileSize() { return fileSize; }
@@ -156,7 +156,7 @@ public class DebitCreditNotePdfDocument {
     public static class Builder {
         private UUID id;
         private String debitCreditNoteId;
-        private String debitCreditNoteNumber;
+        private String documentNumber;
         private String documentPath;
         private String documentUrl;
         private long fileSize;
@@ -170,7 +170,7 @@ public class DebitCreditNotePdfDocument {
 
         public Builder id(UUID id) { this.id = id; return this; }
         public Builder debitCreditNoteId(String debitCreditNoteId) { this.debitCreditNoteId = debitCreditNoteId; return this; }
-        public Builder debitCreditNoteNumber(String debitCreditNoteNumber) { this.debitCreditNoteNumber = debitCreditNoteNumber; return this; }
+        public Builder documentNumber(String documentNumber) { this.documentNumber = documentNumber; return this; }
         public Builder documentPath(String documentPath) { this.documentPath = documentPath; return this; }
         public Builder documentUrl(String documentUrl) { this.documentUrl = documentUrl; return this; }
         public Builder fileSize(long fileSize) { this.fileSize = fileSize; return this; }
@@ -196,7 +196,7 @@ public class DebitCreditNotePdfDocument {
         return "DebitCreditNotePdfDocument{" +
                 "id=" + id +
                 ", debitCreditNoteId='" + debitCreditNoteId + '\'' +
-                ", debitCreditNoteNumber='" + debitCreditNoteNumber + '\'' +
+                ", documentNumber='" + documentNumber + '\'' +
                 ", status=" + status +
                 ", retryCount=" + retryCount +
                 '}';
