@@ -1,0 +1,39 @@
+package com.wpanther.debitcreditnote.pdf.infrastructure.adapter.out.storage;
+
+import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.out.persistence.JpaDebitCreditNotePdfDocumentRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+@ConditionalOnProperty(name = "app.minio.cleanup.enabled", havingValue = "true", matchIfMissing = false)
+public class MinioCleanupService {
+
+    private final MinioStorageAdapter minioStorage;
+    private final JpaDebitCreditNotePdfDocumentRepository repository;
+
+    @Scheduled(cron = "${app.minio.cleanup.cron:0 0 2 * * ?}")
+    public void cleanupOrphanedPdfs() {
+        log.info("Starting orphaned PDF cleanup job");
+        try {
+            List<String> minioKeys    = minioStorage.listAllPdfs();
+            Set<String>  databaseKeys = repository.findAllDocumentPaths();
+            List<String> orphanedKeys = minioKeys.stream()
+                    .filter(key -> !databaseKeys.contains(key)).toList();
+            if (orphanedKeys.isEmpty()) { log.info("No orphaned PDFs found"); return; }
+            log.warn("Found {} orphaned PDF(s) to delete: {}", orphanedKeys.size(), orphanedKeys);
+            int deleted = 0;
+            for (String key : orphanedKeys) { minioStorage.deleteWithoutCircuitBreaker(key); deleted++; }
+            log.info("Orphaned PDF cleanup completed: {} deleted", deleted);
+        } catch (Exception e) {
+            log.error("Orphaned PDF cleanup job failed: {}", e.getMessage(), e);
+        }
+    }
+}
