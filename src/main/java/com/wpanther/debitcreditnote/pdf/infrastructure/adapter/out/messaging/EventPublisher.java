@@ -1,7 +1,7 @@
 package com.wpanther.debitcreditnote.pdf.infrastructure.adapter.out.messaging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wpanther.debitcreditnote.pdf.application.event.DebitCreditNotePdfGeneratedEvent;
+import com.wpanther.debitcreditnote.pdf.application.dto.event.DebitCreditNotePdfGeneratedEvent;
 import com.wpanther.debitcreditnote.pdf.application.port.out.PdfEventPort;
 import com.wpanther.saga.infrastructure.outbox.OutboxService;
 import lombok.RequiredArgsConstructor;

@@ -1,10 +1,9 @@
 package com.wpanther.debitcreditnote.pdf.application.service;
 
-import com.wpanther.debitcreditnote.pdf.application.event.DebitCreditNotePdfGeneratedEvent;
+import com.wpanther.debitcreditnote.pdf.application.dto.event.DebitCreditNotePdfGeneratedEvent;
 import com.wpanther.debitcreditnote.pdf.application.port.out.PdfEventPort;
 import com.wpanther.debitcreditnote.pdf.application.port.out.SagaReplyPort;
-import com.wpanther.debitcreditnote.pdf.application.usecase.CompensateDebitCreditNotePdfUseCase;
-import com.wpanther.debitcreditnote.pdf.application.usecase.ProcessDebitCreditNotePdfUseCase;
+import com.wpanther.saga.domain.enums.SagaStep;
 import com.wpanther.debitcreditnote.pdf.domain.model.DebitCreditNotePdfDocument;
 import com.wpanther.debitcreditnote.pdf.domain.repository.DebitCreditNotePdfDocumentRepository;
 import com.wpanther.debitcreditnote.pdf.infrastructure.metrics.PdfGenerationMetrics;
@@ -60,35 +59,31 @@ public class DebitCreditNotePdfDocumentService {
     @Transactional
     public void completeGenerationAndPublish(UUID documentId, String s3Key, String fileUrl,
                                              long fileSize, int previousRetryCount,
-                                             ProcessDebitCreditNotePdfUseCase.Command command) {
+                                             String sagaId, SagaStep sagaStep, String correlationId,
+                                             String documentIdField, String documentNumber) {
         DebitCreditNotePdfDocument doc = requireDocument(documentId);
         doc.markCompleted(s3Key, fileUrl, fileSize);
         doc.markXmlEmbedded();
         applyRetryCount(doc, previousRetryCount);
         doc = repository.save(doc);
 
-        pdfEventPort.publishPdfGenerated(buildGeneratedEvent(doc, command));
-        sagaReplyPort.publishSuccess(
-                command.getSagaId(), command.getSagaStep(), command.getCorrelationId(),
-                doc.getDocumentUrl(), doc.getFileSize());
+        pdfEventPort.publishPdfGenerated(buildGeneratedEvent(doc, sagaId, documentIdField, documentNumber, correlationId));
+        sagaReplyPort.publishSuccess(sagaId, sagaStep, correlationId, doc.getDocumentUrl(), doc.getFileSize());
 
-        log.info("Completed PDF generation for saga {} debit/credit note {}",
-                command.getSagaId(), doc.getDocumentNumber());
+        log.info("Completed PDF generation for saga {} debit/credit note {}", sagaId, doc.getDocumentNumber());
     }
 
     @Transactional
     public void failGenerationAndPublish(UUID documentId, String errorMessage,
                                          int previousRetryCount,
-                                         ProcessDebitCreditNotePdfUseCase.Command command) {
+                                         String sagaId, SagaStep sagaStep, String correlationId) {
         String safeError = errorMessage != null ? errorMessage : "PDF generation failed";
         DebitCreditNotePdfDocument doc = requireDocument(documentId);
         doc.markFailed(safeError);
         applyRetryCount(doc, previousRetryCount);
         repository.save(doc);
-        sagaReplyPort.publishFailure(
-                command.getSagaId(), command.getSagaStep(), command.getCorrelationId(), safeError);
-        log.warn("PDF generation failed for saga {} debit/credit note {}: {}",
-                command.getSagaId(), doc.getDocumentNumber(), safeError);
+        sagaReplyPort.publishFailure(sagaId, sagaStep, correlationId, safeError);
+        log.warn("PDF generation failed for saga {} debit/credit note {}: {}", sagaId, doc.getDocumentNumber(), safeError);
     }
 
     @Transactional
@@ -99,41 +94,34 @@ public class DebitCreditNotePdfDocumentService {
 
     @Transactional
     public void publishIdempotentSuccess(DebitCreditNotePdfDocument existing,
-                                         ProcessDebitCreditNotePdfUseCase.Command command) {
-        pdfEventPort.publishPdfGenerated(buildGeneratedEvent(existing, command));
-        sagaReplyPort.publishSuccess(
-                command.getSagaId(), command.getSagaStep(), command.getCorrelationId(),
-                existing.getDocumentUrl(), existing.getFileSize());
-        log.warn("Debit/credit note PDF already generated for saga {} — re-publishing SUCCESS reply",
-                command.getSagaId());
+                                         String sagaId, SagaStep sagaStep, String correlationId,
+                                         String documentIdField, String documentNumber) {
+        pdfEventPort.publishPdfGenerated(buildGeneratedEvent(existing, sagaId, documentIdField, documentNumber, correlationId));
+        sagaReplyPort.publishSuccess(sagaId, sagaStep, correlationId, existing.getDocumentUrl(), existing.getFileSize());
+        log.warn("Debit/credit note PDF already generated for saga {} — re-publishing SUCCESS reply", sagaId);
     }
 
     @Transactional
-    public void publishRetryExhausted(ProcessDebitCreditNotePdfUseCase.Command command) {
-        pdfGenerationMetrics.recordRetryExhausted(
-                command.getSagaId(), command.getDocumentId(), command.getDocumentNumber());
-        sagaReplyPort.publishFailure(
-                command.getSagaId(), command.getSagaStep(), command.getCorrelationId(),
-                "Maximum retry attempts exceeded");
-        log.error("Max retries exceeded for saga {} document {}", command.getSagaId(), command.getDocumentNumber());
+    public void publishRetryExhausted(String sagaId, SagaStep sagaStep, String correlationId,
+                                       String documentIdField, String documentNumber) {
+        pdfGenerationMetrics.recordRetryExhausted(sagaId, documentIdField, documentNumber);
+        sagaReplyPort.publishFailure(sagaId, sagaStep, correlationId, "Maximum retry attempts exceeded");
+        log.error("Max retries exceeded for saga {} document {}", sagaId, documentNumber);
     }
 
     @Transactional
-    public void publishGenerationFailure(ProcessDebitCreditNotePdfUseCase.Command command, String errorMessage) {
-        sagaReplyPort.publishFailure(
-                command.getSagaId(), command.getSagaStep(), command.getCorrelationId(), errorMessage);
+    public void publishGenerationFailure(String sagaId, SagaStep sagaStep, String correlationId, String errorMessage) {
+        sagaReplyPort.publishFailure(sagaId, sagaStep, correlationId, errorMessage);
     }
 
     @Transactional
-    public void publishCompensated(CompensateDebitCreditNotePdfUseCase.Command command) {
-        sagaReplyPort.publishCompensated(
-                command.getSagaId(), command.getSagaStep(), command.getCorrelationId());
+    public void publishCompensated(String sagaId, SagaStep sagaStep, String correlationId) {
+        sagaReplyPort.publishCompensated(sagaId, sagaStep, correlationId);
     }
 
     @Transactional
-    public void publishCompensationFailure(CompensateDebitCreditNotePdfUseCase.Command command, String error) {
-        sagaReplyPort.publishFailure(
-                command.getSagaId(), command.getSagaStep(), command.getCorrelationId(), error);
+    public void publishCompensationFailure(String sagaId, SagaStep sagaStep, String correlationId, String error) {
+        sagaReplyPort.publishFailure(sagaId, sagaStep, correlationId, error);
     }
 
     private DebitCreditNotePdfDocument requireDocument(UUID documentId) {
@@ -148,9 +136,10 @@ public class DebitCreditNotePdfDocumentService {
     }
 
     private DebitCreditNotePdfGeneratedEvent buildGeneratedEvent(DebitCreditNotePdfDocument doc,
-                                                                  ProcessDebitCreditNotePdfUseCase.Command command) {
+                                                                  String sagaId, String documentIdField,
+                                                                  String documentNumber, String correlationId) {
         return new DebitCreditNotePdfGeneratedEvent(
-                command.getSagaId(), command.getDocumentId(), doc.getDocumentNumber(),
-                doc.getDocumentUrl(), doc.getFileSize(), doc.isXmlEmbedded(), command.getCorrelationId());
+                sagaId, documentIdField, documentNumber,
+                doc.getDocumentUrl(), doc.getFileSize(), doc.isXmlEmbedded(), correlationId);
     }
 }

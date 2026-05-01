@@ -1,4 +1,4 @@
-package com.wpanther.debitcreditnote.pdf.application.event;
+package com.wpanther.debitcreditnote.pdf.application.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
