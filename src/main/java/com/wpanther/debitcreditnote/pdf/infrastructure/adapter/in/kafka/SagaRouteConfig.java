@@ -3,9 +3,10 @@ package com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wpanther.saga.domain.enums.SagaStep;
-import com.wpanther.debitcreditnote.pdf.application.service.SagaCommandHandler;
-import com.wpanther.debitcreditnote.pdf.application.usecase.CompensateDebitCreditNotePdfUseCase;
-import com.wpanther.debitcreditnote.pdf.application.usecase.ProcessDebitCreditNotePdfUseCase;
+import com.wpanther.debitcreditnote.pdf.application.port.in.CompensateDebitCreditNotePdfUseCase;
+import com.wpanther.debitcreditnote.pdf.application.port.in.ProcessDebitCreditNotePdfUseCase;
+import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka.dto.DebitCreditNotePdfCommand;
+import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka.dto.DebitCreditNotePdfCompensationCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -48,11 +49,11 @@ public class SagaRouteConfig extends RouteBuilder {
                         .onPrepareFailure(exchange -> {
                             Throwable cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
                             Object body = exchange.getIn().getBody();
-                            if (body instanceof KafkaDebitCreditNoteProcessCommand cmd) {
+                            if (body instanceof DebitCreditNotePdfCommand cmd) {
                                 log.error("DLQ: notifying orchestrator of retry exhaustion for saga {} document {}",
                                         cmd.getSagaId(), cmd.getDocumentNumber());
                                 sagaCommandHandler.publishOrchestrationFailure(cmd, cause);
-                            } else if (body instanceof KafkaDebitCreditNoteCompensateCommand cmd) {
+                            } else if (body instanceof DebitCreditNotePdfCompensationCommand cmd) {
                                 log.error("DLQ: notifying orchestrator of compensation retry exhaustion for saga {} document {}",
                                         cmd.getSagaId(), cmd.getDocumentId());
                                 sagaCommandHandler.publishCompensationOrchestrationFailure(cmd, cause);
@@ -72,13 +73,14 @@ public class SagaRouteConfig extends RouteBuilder {
                         + "&maxPollRecords={{app.kafka.consumer.max-poll-records:100}}"
                         + "&consumersCount={{app.kafka.consumer.consumers-count:3}}")
                 .routeId("saga-command-consumer")
-                .unmarshal().json(JsonLibrary.Jackson, KafkaDebitCreditNoteProcessCommand.class)
+                .unmarshal().json(JsonLibrary.Jackson, DebitCreditNotePdfCommand.class)
                 .process(exchange -> {
-                        KafkaDebitCreditNoteProcessCommand cmd =
-                                exchange.getIn().getBody(KafkaDebitCreditNoteProcessCommand.class);
+                        DebitCreditNotePdfCommand cmd =
+                                exchange.getIn().getBody(DebitCreditNotePdfCommand.class);
                         log.info("Processing saga command for saga: {}, document: {}",
                                         cmd.getSagaId(), cmd.getDocumentNumber());
-                        processUseCase.handle(cmd);
+                        processUseCase.handle(cmd.getDocumentId(), cmd.getDocumentNumber(), cmd.getSignedXmlUrl(),
+                                cmd.getSagaId(), cmd.getSagaStep(), cmd.getCorrelationId());
                 })
                 .log("Successfully processed saga command");
 
@@ -91,13 +93,14 @@ public class SagaRouteConfig extends RouteBuilder {
                         + "&maxPollRecords={{app.kafka.consumer.max-poll-records:100}}"
                         + "&consumersCount={{app.kafka.consumer.consumers-count:3}}")
                 .routeId("saga-compensation-consumer")
-                .unmarshal().json(JsonLibrary.Jackson, KafkaDebitCreditNoteCompensateCommand.class)
+                .unmarshal().json(JsonLibrary.Jackson, DebitCreditNotePdfCompensationCommand.class)
                 .process(exchange -> {
-                        KafkaDebitCreditNoteCompensateCommand cmd =
-                                exchange.getIn().getBody(KafkaDebitCreditNoteCompensateCommand.class);
+                        DebitCreditNotePdfCompensationCommand cmd =
+                                exchange.getIn().getBody(DebitCreditNotePdfCompensationCommand.class);
                         log.info("Processing compensation for saga: {}, document: {}",
                                         cmd.getSagaId(), cmd.getDocumentId());
-                        compensateUseCase.handle(cmd);
+                        compensateUseCase.handle(cmd.getDocumentId(),
+                                cmd.getSagaId(), cmd.getSagaStep(), cmd.getCorrelationId());
                 })
                 .log("Successfully processed compensation command");
     }

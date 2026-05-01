@@ -5,8 +5,6 @@ import com.wpanther.debitcreditnote.pdf.application.port.out.SagaReplyPort;
 import com.wpanther.debitcreditnote.pdf.domain.model.DebitCreditNotePdfDocument;
 import com.wpanther.debitcreditnote.pdf.domain.model.GenerationStatus;
 import com.wpanther.debitcreditnote.pdf.domain.repository.DebitCreditNotePdfDocumentRepository;
-import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka.KafkaDebitCreditNoteCompensateCommand;
-import com.wpanther.debitcreditnote.pdf.infrastructure.adapter.in.kafka.KafkaDebitCreditNoteProcessCommand;
 import com.wpanther.debitcreditnote.pdf.infrastructure.metrics.PdfGenerationMetrics;
 import com.wpanther.saga.domain.enums.SagaStep;
 import org.junit.jupiter.api.Test;
@@ -31,16 +29,11 @@ class DebitCreditNotePdfDocumentServiceTest {
     @Mock private PdfGenerationMetrics metrics;
     @InjectMocks private DebitCreditNotePdfDocumentService service;
 
-    private KafkaDebitCreditNoteProcessCommand command() {
-        return new KafkaDebitCreditNoteProcessCommand(
-                "saga-1", SagaStep.GENERATE_DEBIT_CREDIT_NOTE_PDF, "corr-1",
-                "dcn-001", "DCN-2024-001", "http://storage/signed.xml");
-    }
-
-    private KafkaDebitCreditNoteCompensateCommand compensateCommand() {
-        return new KafkaDebitCreditNoteCompensateCommand(
-                "saga-1", SagaStep.GENERATE_DEBIT_CREDIT_NOTE_PDF, "corr-1", "dcn-001");
-    }
+    private static final String SAGA_ID = "saga-1";
+    private static final SagaStep SAGA_STEP = SagaStep.GENERATE_DEBIT_CREDIT_NOTE_PDF;
+    private static final String CORRELATION_ID = "corr-1";
+    private static final String DOCUMENT_ID = "dcn-001";
+    private static final String DOCUMENT_NUMBER = "DCN-2024-001";
 
     @Test
     void findByDebitCreditNoteId_delegatesToRepository() {
@@ -94,10 +87,11 @@ class DebitCreditNotePdfDocumentServiceTest {
         when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.completeGenerationAndPublish(
-                docId, "2024/01/15/test.pdf", "http://minio/test.pdf", 12345L, -1, command());
+                docId, "2024/01/15/test.pdf", "http://minio/test.pdf", 12345L, -1,
+                SAGA_ID, SAGA_STEP, CORRELATION_ID, DOCUMENT_ID, DOCUMENT_NUMBER);
 
         verify(pdfEventPort).publishPdfGenerated(any());
-        verify(sagaReplyPort).publishSuccess(eq("saga-1"), any(), eq("corr-1"),
+        verify(sagaReplyPort).publishSuccess(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID),
                 eq("http://minio/test.pdf"), eq(12345L));
     }
 
@@ -111,10 +105,11 @@ class DebitCreditNotePdfDocumentServiceTest {
         when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.completeGenerationAndPublish(
-                docId, "2024/01/15/test.pdf", "http://minio/test.pdf", 12345L, 2, command());
+                docId, "2024/01/15/test.pdf", "http://minio/test.pdf", 12345L, 2,
+                SAGA_ID, SAGA_STEP, CORRELATION_ID, DOCUMENT_ID, DOCUMENT_NUMBER);
 
         verify(pdfEventPort).publishPdfGenerated(any());
-        verify(sagaReplyPort).publishSuccess(eq("saga-1"), any(), eq("corr-1"),
+        verify(sagaReplyPort).publishSuccess(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID),
                 eq("http://minio/test.pdf"), eq(12345L));
     }
 
@@ -127,9 +122,9 @@ class DebitCreditNotePdfDocumentServiceTest {
         when(repository.findById(docId)).thenReturn(Optional.of(doc));
         when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        service.failGenerationAndPublish(docId, "FOP crash", -1, command());
+        service.failGenerationAndPublish(docId, "FOP crash", -1, SAGA_ID, SAGA_STEP, CORRELATION_ID);
 
-        verify(sagaReplyPort).publishFailure(eq("saga-1"), any(), eq("corr-1"), eq("FOP crash"));
+        verify(sagaReplyPort).publishFailure(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID), eq("FOP crash"));
     }
 
     @Test
@@ -141,18 +136,18 @@ class DebitCreditNotePdfDocumentServiceTest {
         when(repository.findById(docId)).thenReturn(Optional.of(doc));
         when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        service.failGenerationAndPublish(docId, null, -1, command());
+        service.failGenerationAndPublish(docId, null, -1, SAGA_ID, SAGA_STEP, CORRELATION_ID);
 
-        verify(sagaReplyPort).publishFailure(eq("saga-1"), any(), eq("corr-1"),
+        verify(sagaReplyPort).publishFailure(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID),
                 eq("PDF generation failed"));
     }
 
     @Test
     void publishRetryExhausted_recordsMetricAndPublishesFailure() {
-        service.publishRetryExhausted(command());
+        service.publishRetryExhausted(SAGA_ID, SAGA_STEP, CORRELATION_ID, DOCUMENT_ID, DOCUMENT_NUMBER);
 
-        verify(metrics).recordRetryExhausted("saga-1", "dcn-001", "DCN-2024-001");
-        verify(sagaReplyPort).publishFailure(eq("saga-1"), any(), eq("corr-1"),
+        verify(metrics).recordRetryExhausted(SAGA_ID, DOCUMENT_ID, DOCUMENT_NUMBER);
+        verify(sagaReplyPort).publishFailure(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID),
                 eq("Maximum retry attempts exceeded"));
     }
 
@@ -163,32 +158,32 @@ class DebitCreditNotePdfDocumentServiceTest {
                 .status(GenerationStatus.COMPLETED).documentUrl("http://minio/existing.pdf")
                 .fileSize(9999L).build();
 
-        service.publishIdempotentSuccess(completedDoc, command());
+        service.publishIdempotentSuccess(completedDoc, SAGA_ID, SAGA_STEP, CORRELATION_ID, DOCUMENT_ID, DOCUMENT_NUMBER);
 
         verify(pdfEventPort).publishPdfGenerated(any());
-        verify(sagaReplyPort).publishSuccess(eq("saga-1"), any(), eq("corr-1"),
+        verify(sagaReplyPort).publishSuccess(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID),
                 eq("http://minio/existing.pdf"), eq(9999L));
     }
 
     @Test
     void publishGenerationFailure_publishesFailure() {
-        service.publishGenerationFailure(command(), "some error");
+        service.publishGenerationFailure(SAGA_ID, SAGA_STEP, CORRELATION_ID, "some error");
 
-        verify(sagaReplyPort).publishFailure(eq("saga-1"), any(), eq("corr-1"), eq("some error"));
+        verify(sagaReplyPort).publishFailure(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID), eq("some error"));
     }
 
     @Test
     void publishCompensated_publishesCompensated() {
-        service.publishCompensated(compensateCommand());
+        service.publishCompensated(SAGA_ID, SAGA_STEP, CORRELATION_ID);
 
-        verify(sagaReplyPort).publishCompensated(eq("saga-1"), any(), eq("corr-1"));
+        verify(sagaReplyPort).publishCompensated(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID));
     }
 
     @Test
     void publishCompensationFailure_publishesFailure() {
-        service.publishCompensationFailure(compensateCommand(), "comp error");
+        service.publishCompensationFailure(SAGA_ID, SAGA_STEP, CORRELATION_ID, "comp error");
 
-        verify(sagaReplyPort).publishFailure(eq("saga-1"), any(), eq("corr-1"), eq("comp error"));
+        verify(sagaReplyPort).publishFailure(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID), eq("comp error"));
     }
 
     @Test
