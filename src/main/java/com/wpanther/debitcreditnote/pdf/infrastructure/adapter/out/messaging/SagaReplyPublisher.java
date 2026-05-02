@@ -6,8 +6,8 @@ import com.wpanther.saga.domain.enums.ReplyStatus;
 import com.wpanther.saga.domain.enums.SagaStep;
 import com.wpanther.saga.domain.model.SagaReply;
 import com.wpanther.saga.infrastructure.outbox.OutboxService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,15 +15,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class SagaReplyPublisher implements SagaReplyPort {
 
-    private static final String REPLY_TOPIC    = "saga.reply.debit-credit-note-pdf";
     private static final String AGGREGATE_TYPE = OutboxConstants.AGGREGATE_TYPE;
 
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
+    private final String replyTopic;
+
+    public SagaReplyPublisher(
+            OutboxService outboxService,
+            ObjectMapper objectMapper,
+            @Value("${app.kafka.topics.saga-reply-debit-credit-note-pdf:saga.reply.debit-credit-note-pdf}") String replyTopic) {
+        this.outboxService = outboxService;
+        this.objectMapper = objectMapper;
+        this.replyTopic = replyTopic;
+    }
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
@@ -31,7 +39,7 @@ public class SagaReplyPublisher implements SagaReplyPort {
                                String pdfUrl, long pdfSize) {
         DebitCreditNotePdfReplyEvent reply =
                 DebitCreditNotePdfReplyEvent.success(sagaId, sagaStep, correlationId, pdfUrl, pdfSize);
-        outboxService.saveWithRouting(reply, AGGREGATE_TYPE, sagaId, REPLY_TOPIC, sagaId,
+        outboxService.saveWithRouting(reply, AGGREGATE_TYPE, sagaId, replyTopic, sagaId,
                 toJson(Map.of("sagaId", sagaId, "correlationId", correlationId, "status", "SUCCESS")));
         log.info("Published SUCCESS saga reply for saga {} step {}", sagaId, sagaStep);
     }
@@ -41,7 +49,7 @@ public class SagaReplyPublisher implements SagaReplyPort {
     public void publishFailure(String sagaId, SagaStep sagaStep, String correlationId, String errorMessage) {
         DebitCreditNotePdfReplyEvent reply =
                 DebitCreditNotePdfReplyEvent.failure(sagaId, sagaStep, correlationId, errorMessage);
-        outboxService.saveWithRouting(reply, AGGREGATE_TYPE, sagaId, REPLY_TOPIC, sagaId,
+        outboxService.saveWithRouting(reply, AGGREGATE_TYPE, sagaId, replyTopic, sagaId,
                 toJson(Map.of("sagaId", sagaId, "correlationId", correlationId, "status", "FAILURE")));
         log.info("Published FAILURE saga reply for saga {} step {}: {}", sagaId, sagaStep, errorMessage);
     }
@@ -51,7 +59,7 @@ public class SagaReplyPublisher implements SagaReplyPort {
     public void publishCompensated(String sagaId, SagaStep sagaStep, String correlationId) {
         DebitCreditNotePdfReplyEvent reply =
                 DebitCreditNotePdfReplyEvent.compensated(sagaId, sagaStep, correlationId);
-        outboxService.saveWithRouting(reply, AGGREGATE_TYPE, sagaId, REPLY_TOPIC, sagaId,
+        outboxService.saveWithRouting(reply, AGGREGATE_TYPE, sagaId, replyTopic, sagaId,
                 toJson(Map.of("sagaId", sagaId, "correlationId", correlationId, "status", "COMPENSATED")));
         log.info("Published COMPENSATED saga reply for saga {} step {}", sagaId, sagaStep);
     }

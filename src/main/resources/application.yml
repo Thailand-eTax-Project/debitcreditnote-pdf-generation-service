@@ -46,6 +46,7 @@ app:
       max-poll-records: ${KAFKA_MAX_POLL_RECORDS:100}
       consumers-count: ${KAFKA_CONSUMERS_COUNT:3}
     topics:
+      saga-reply-debit-credit-note-pdf: saga.reply.debit-credit-note-pdf
       saga-command-debit-credit-note-pdf: saga.command.debit-credit-note-pdf
       saga-compensation-debit-credit-note-pdf: saga.compensation.debit-credit-note-pdf
       pdf-generated-debit-credit-note: pdf.generated.debit-credit-note
