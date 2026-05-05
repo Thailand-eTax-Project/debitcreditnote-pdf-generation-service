@@ -127,6 +127,7 @@ mvn flyway:migrate
 |-------|---------|
 | `saga.reply.debit-credit-note-pdf` | SUCCESS/FAILURE/COMPENSATED replies to orchestrator |
 | `pdf.generated.debit-credit-note` | Notification events for downstream services |
+| `document.archive` | Fire-and-forget archival (UNSIGNED_PDF stored by document-storage-service) |
 
 ### Command Format
 
