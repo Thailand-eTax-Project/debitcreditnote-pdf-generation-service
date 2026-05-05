@@ -1,5 +1,6 @@
 package com.wpanther.debitcreditnote.pdf.application.service;
 
+import com.wpanther.debitcreditnote.pdf.application.port.out.DocumentArchivePort;
 import com.wpanther.debitcreditnote.pdf.application.port.out.PdfEventPort;
 import com.wpanther.debitcreditnote.pdf.application.port.out.SagaReplyPort;
 import com.wpanther.debitcreditnote.pdf.domain.model.DebitCreditNotePdfDocument;
@@ -26,6 +27,7 @@ class DebitCreditNotePdfDocumentServiceTest {
     @Mock private DebitCreditNotePdfDocumentRepository repository;
     @Mock private PdfEventPort pdfEventPort;
     @Mock private SagaReplyPort sagaReplyPort;
+    @Mock private DocumentArchivePort documentArchivePort;
     @Mock private PdfGenerationMetrics metrics;
     @InjectMocks private DebitCreditNotePdfDocumentService service;
 
@@ -90,6 +92,7 @@ class DebitCreditNotePdfDocumentServiceTest {
                 docId, "2024/01/15/test.pdf", "http://minio/test.pdf", 12345L, -1,
                 SAGA_ID, SAGA_STEP, CORRELATION_ID, DOCUMENT_ID, DOCUMENT_NUMBER);
 
+        verify(documentArchivePort).publish(any());
         verify(pdfEventPort).publishPdfGenerated(any());
         verify(sagaReplyPort).publishSuccess(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID),
                 eq("http://minio/test.pdf"), eq(12345L));
@@ -108,6 +111,7 @@ class DebitCreditNotePdfDocumentServiceTest {
                 docId, "2024/01/15/test.pdf", "http://minio/test.pdf", 12345L, 2,
                 SAGA_ID, SAGA_STEP, CORRELATION_ID, DOCUMENT_ID, DOCUMENT_NUMBER);
 
+        verify(documentArchivePort).publish(any());
         verify(pdfEventPort).publishPdfGenerated(any());
         verify(sagaReplyPort).publishSuccess(eq(SAGA_ID), eq(SAGA_STEP), eq(CORRELATION_ID),
                 eq("http://minio/test.pdf"), eq(12345L));

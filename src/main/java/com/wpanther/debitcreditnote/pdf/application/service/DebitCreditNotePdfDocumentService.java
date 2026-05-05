@@ -1,6 +1,8 @@
 package com.wpanther.debitcreditnote.pdf.application.service;
 
 import com.wpanther.debitcreditnote.pdf.application.dto.event.DebitCreditNotePdfGeneratedEvent;
+import com.wpanther.debitcreditnote.pdf.application.dto.event.DocumentArchiveEvent;
+import com.wpanther.debitcreditnote.pdf.application.port.out.DocumentArchivePort;
 import com.wpanther.debitcreditnote.pdf.application.port.out.PdfEventPort;
 import com.wpanther.debitcreditnote.pdf.application.port.out.SagaReplyPort;
 import com.wpanther.saga.domain.enums.SagaStep;
@@ -23,6 +25,7 @@ public class DebitCreditNotePdfDocumentService {
     private final DebitCreditNotePdfDocumentRepository repository;
     private final PdfEventPort pdfEventPort;
     private final SagaReplyPort sagaReplyPort;
+    private final DocumentArchivePort documentArchivePort;
     private final PdfGenerationMetrics pdfGenerationMetrics;
 
     @Transactional(readOnly = true)
@@ -66,6 +69,19 @@ public class DebitCreditNotePdfDocumentService {
         doc.markXmlEmbedded();
         applyRetryCount(doc, previousRetryCount);
         doc = repository.save(doc);
+
+        // Emit document.archive for unsigned PDF archival
+        documentArchivePort.publish(new DocumentArchiveEvent(
+                documentIdField,
+                doc.getDocumentNumber(),
+                "DEBIT_CREDIT_NOTE",
+                "UNSIGNED_PDF",
+                doc.getDocumentUrl(),
+                doc.getDocumentNumber() + ".pdf",
+                doc.getMimeType(),
+                doc.getFileSize(),
+                sagaId,
+                correlationId));
 
         pdfEventPort.publishPdfGenerated(buildGeneratedEvent(doc, sagaId, documentIdField, documentNumber, correlationId));
         sagaReplyPort.publishSuccess(sagaId, sagaStep, correlationId, doc.getDocumentUrl(), doc.getFileSize());
